@@ -1,4 +1,5 @@
 # Environment Manager Configuration
+config-version: 1
 
 # Global environment variables that can be referenced in targets
 environments:
