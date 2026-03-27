@@ -62,8 +62,7 @@ public final class BungeePlugin extends Plugin {
                 }
 
                 try {
-                    envManager.loadConfig(new File(getDataFolder(), "config.yml").toPath());
-                    envManager.applyEnvironmentKeys(Path.of("").toAbsolutePath());
+                    envManager.reload(new File(getDataFolder(), "config.yml").toPath(), Path.of("").toAbsolutePath());
                     sender.sendMessage(new TextComponent("§aEnvironment configuration reloaded and applied!"));
                 } catch (ConfigurateException e) {
                     sender.sendMessage(new TextComponent("§cFailed to reload configuration: " + e.getMessage()));

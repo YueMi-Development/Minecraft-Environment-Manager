@@ -47,8 +47,7 @@ public final class BukkitPlugin extends JavaPlugin implements CommandExecutor {
             }
 
             try {
-                envManager.loadConfig(getDataFolder().toPath().resolve("config.yml"));
-                envManager.applyEnvironmentKeys(getServer().getWorldContainer().toPath().toAbsolutePath());
+                envManager.reload(getDataFolder().toPath().resolve("config.yml"), getServer().getWorldContainer().toPath().toAbsolutePath());
                 sender.sendMessage("§aEnvironment configuration reloaded and applied!");
             } catch (ConfigurateException e) {
                 sender.sendMessage("§cFailed to reload configuration: " + e.getMessage());
