@@ -1,0 +1,4 @@
+name: ExamplePlugin
+main: org.yuemi.example.plugin.BungeePlugin
+version: 1.0.0-SNAPSHOT
+author: YueMi-Development

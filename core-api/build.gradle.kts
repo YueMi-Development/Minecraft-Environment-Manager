@@ -16,7 +16,9 @@ require(developerId.isNotBlank())
 require(developerName.isNotBlank())
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.6-R0.1-SNAPSHOT")
+    // Platform-independent messaging
+    api("net.kyori:adventure-api:4.19.0")
+    api("net.kyori:adventure-text-minimessage:4.19.0")
 }
 
 java {
