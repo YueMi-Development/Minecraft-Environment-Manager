@@ -1,14 +1,15 @@
 package org.yuemi.example.api;
 
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.UUID;
 
 public interface ExampleApi {
 
     void sendMessage(
-            @NotNull Player player,
+            @NotNull UUID playerUuid,
             @NotNull String message
     );
 
-    boolean isFeatureEnabled(@NotNull Player player);
+    boolean isFeatureEnabled(@NotNull UUID playerUuid);
 }

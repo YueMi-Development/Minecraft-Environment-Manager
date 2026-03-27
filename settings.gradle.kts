@@ -13,4 +13,6 @@ plugins {
 
 rootProject.name = "Minecraft-Plugin-Templates"
 include("core-api")
-include("core-plugin")
+include("core-bukkit")
+include("core-velocity")
+include("core-bungeecord")
