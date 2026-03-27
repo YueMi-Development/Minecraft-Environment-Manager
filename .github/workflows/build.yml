@@ -8,6 +8,11 @@ on:
 
 jobs:
   build:
+    if: |
+      !contains(github.event.head_commit.message, '[ci skip]') &&
+      !contains(github.event.head_commit.message, '[skip ci]') &&
+      !contains(github.event.head_commit.message, '[ci-skip]') &&
+      !contains(github.event.head_commit.message, '[skip-ci]')
     runs-on: ubuntu-latest
 
     steps:
@@ -27,8 +32,12 @@ jobs:
       - name: Build all modules
         run: ./gradlew clean build --no-daemon
 
-      - name: Upload plugin jar
+      - name: Upload plugin jars
         uses: actions/upload-artifact@v4
         with:
-          name: plugin-jar
-          path: core-plugin/build/libs/*.jar
+          name: plugin-jars
+          path: |
+            core-bukkit/build/libs/*.jar
+            core-bungeecord/build/libs/*.jar
+            core-velocity/build/libs/*.jar
+            core-universal/build/libs/*.jar
