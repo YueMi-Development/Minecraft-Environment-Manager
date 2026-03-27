@@ -58,6 +58,20 @@ public final class EnvironmentManager {
         loadEnvironments();
     }
 
+    /**
+     * Reloads the configuration and re-applies environment keys to all targets.
+     *
+     * @param configPath the path to the configuration file
+     * @param rootPath   the root path to resolve relative target paths
+     * @throws ConfigurateException if an error occurs during loading
+     */
+    public void reload(@NotNull Path configPath, @NotNull Path rootPath) throws ConfigurateException {
+        logger.info("Reloading environment manager configuration...");
+        loadConfig(configPath);
+        applyEnvironmentKeys(rootPath);
+        logger.info("Environment manager successfully reloaded and applied!");
+    }
+
     private void migrateConfig(Path configPath, int currentVersion) {
         logger.info("Migrating configuration from version " + currentVersion + " to " + LATEST_CONFIG_VERSION);
         try {
@@ -165,6 +179,7 @@ public final class EnvironmentManager {
      * @param rootPath the root path to resolve relative target paths
      */
     public void applyEnvironmentKeys(@NotNull Path rootPath) {
+        logger.info("Applying environment mappings to target files...");
         ConfigurationNode targetsNode = config.node("targets");
         if (targetsNode.virtual()) return;
 

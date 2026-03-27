@@ -64,8 +64,7 @@ public final class VelocityPlugin {
                 }
 
                 try {
-                    envManager.loadConfig(dataDirectory.resolve("config.yml"));
-                    envManager.applyEnvironmentKeys(Path.of("").toAbsolutePath());
+                    envManager.reload(dataDirectory.resolve("config.yml"), Path.of("").toAbsolutePath());
                     invocation.source().sendMessage(Component.text("Environment configuration reloaded and applied!", NamedTextColor.GREEN));
                 } catch (ConfigurateException e) {
                     invocation.source().sendMessage(Component.text("Failed to reload configuration: " + e.getMessage(), NamedTextColor.RED));
