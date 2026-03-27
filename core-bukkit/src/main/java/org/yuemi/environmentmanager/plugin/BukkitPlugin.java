@@ -8,15 +8,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.configurate.ConfigurateException;
 import org.yuemi.environmentmanager.api.EnvironmentManager;
-import org.yuemi.environmentmanager.api.ExampleApi;
 import org.yuemi.environmentmanager.api.config.ConfigurationManager;
 
 import java.io.File;
 import java.nio.file.Path;
 
-public final class ExamplePlugin extends JavaPlugin implements CommandExecutor {
+public final class BukkitPlugin extends JavaPlugin implements CommandExecutor {
 
-    private ExampleApi api;
     private EnvironmentManager envManager;
 
     @Override
@@ -33,21 +31,11 @@ public final class ExamplePlugin extends JavaPlugin implements CommandExecutor {
             getLogger().severe("Failed to load environment configuration: " + e.getMessage());
         }
 
-        this.api = new ExampleApiImpl();
-
-        getServer().getServicesManager().register(
-                ExampleApi.class,
-                api,
-                this,
-                ServicePriority.Normal
-        );
-
         getCommand("envmanager").setExecutor(this);
     }
 
     @Override
     public void onDisable() {
-        getServer().getServicesManager().unregister(ExampleApi.class, api);
     }
 
     @Override
