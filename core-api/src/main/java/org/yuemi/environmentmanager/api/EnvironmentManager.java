@@ -4,14 +4,10 @@ import org.jetbrains.annotations.NotNull;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.yuemi.environmentmanager.api.config.ConfigurationManager;
+import org.yuemi.environmentmanager.api.config.TextualConfigurationEditor;
 import org.yuemi.environmentmanager.api.HijackManager;
-
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -90,9 +86,10 @@ public final class EnvironmentManager {
     private void migrateConfig(Path configPath, int currentVersion) {
         logger.info("Migrating configuration from version " + currentVersion + " to " + LATEST_CONFIG_VERSION);
         try {
-            config.node("config-version").set(LATEST_CONFIG_VERSION);
-            configManager.save(configPath, config);
-        } catch (ConfigurateException e) {
+            String content = Files.readString(configPath);
+            content = TextualConfigurationEditor.update(content, "config-version", String.valueOf(LATEST_CONFIG_VERSION));
+            Files.writeString(configPath, content);
+        } catch (IOException e) {
             logger.severe("Failed to save migrated configuration: " + e.getMessage());
         }
     }
@@ -208,7 +205,7 @@ public final class EnvironmentManager {
             Map<Object, ? extends ConfigurationNode> mappings = target.node("mappings").childrenMap();
 
             try {
-                ConfigurationNode targetConfig = configManager.load(targetPath);
+                String content = Files.readString(targetPath);
                 boolean changed = false;
 
                 for (Map.Entry<Object, ? extends ConfigurationNode> entry : mappings.entrySet()) {
@@ -217,69 +214,27 @@ public final class EnvironmentManager {
 
                     if (envKey != null && environmentKeys.containsKey(envKey)) {
                         String value = environmentKeys.get(envKey);
-                        String[] path = targetKey.split("\\.");
-                        targetConfig.node((Object[]) path).set(value);
+                        content = TextualConfigurationEditor.update(content, targetKey, value);
                         changed = true;
                     }
                 }
 
                 if (changed) {
                     if (HijackManager.getInstance().isEnabled()) {
-                        byte[] hijackedContent = serializeToByteArray(targetPath, targetConfig);
-                        if (hijackedContent != null) {
-                            HijackManager.getInstance().register(targetPath, hijackedContent);
-                            logger.info("Hijacked (in-memory): " + relativePath);
-                        }
+                        HijackManager.getInstance().register(targetPath, content.getBytes(StandardCharsets.UTF_8));
+                        logger.info("Hijacked (in-memory): " + relativePath);
                     } else {
-                        configManager.save(targetPath, targetConfig);
+                        Files.writeString(targetPath, content);
                         logger.info("Applied environment keys to: " + relativePath);
                     }
                 }
 
-            } catch (ConfigurateException e) {
+            } catch (IOException e) {
                 logger.severe("Failed to apply environment keys to " + relativePath + ": " + e.getMessage());
             }
         });
     }
 
-    private byte[] serializeToByteArray(Path path, ConfigurationNode node) {
-        try {
-            String extension = getExtension(path);
-            StringWriter writer = new StringWriter();
-            
-            try (BufferedWriter bufferedWriter = new BufferedWriter(writer)) {
-                if (extension.equalsIgnoreCase("yml") || extension.equalsIgnoreCase("yaml")) {
-                    org.spongepowered.configurate.yaml.YamlConfigurationLoader.builder()
-                            .sink(() -> bufferedWriter)
-                            .build()
-                            .save(node);
-                } else if (extension.equalsIgnoreCase("json")) {
-                    org.spongepowered.configurate.gson.GsonConfigurationLoader.builder()
-                            .sink(() -> bufferedWriter)
-                            .build()
-                            .save(node);
-                } else if (extension.equalsIgnoreCase("conf")) {
-                    org.spongepowered.configurate.hocon.HoconConfigurationLoader.builder()
-                            .sink(() -> bufferedWriter)
-                            .build()
-                            .save(node);
-                } else {
-                    return null;
-                }
-            }
-
-            return writer.toString().getBytes(StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            logger.severe("Failed to serialize hijacked config for " + path + ": " + e.getMessage());
-            return null;
-        }
-    }
-
-    private String getExtension(Path path) {
-        String filename = path.getFileName().toString();
-        int lastIndex = filename.lastIndexOf('.');
-        return (lastIndex == -1) ? "" : filename.substring(lastIndex + 1);
-    }
 
     /**
      * Gets the loaded environment keys.

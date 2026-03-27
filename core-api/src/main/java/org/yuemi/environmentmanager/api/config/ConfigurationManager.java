@@ -10,7 +10,6 @@ import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Manager class for handling different configuration formats.
