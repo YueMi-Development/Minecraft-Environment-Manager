@@ -27,9 +27,10 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 tasks.jar {
+    dependsOn(":core-api:jar")
     archiveBaseName.set(pluginName)
     archiveVersion.set(pluginVersion)
-    archiveClassifier.set("")
+    archiveClassifier.set("bukkit")
 
     manifest {
         attributes(
@@ -44,7 +45,7 @@ tasks.jar {
 tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
     archiveBaseName.set(pluginName)
     archiveVersion.set(pluginVersion)
-    archiveClassifier.set("")
+    archiveClassifier.set("bukkit")
 }
 
 tasks.build {

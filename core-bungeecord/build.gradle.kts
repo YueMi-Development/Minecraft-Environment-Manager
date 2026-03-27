@@ -27,14 +27,16 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 tasks.jar {
-    archiveBaseName.set("$pluginName-bungee")
+    dependsOn(":core-api:jar")
+    archiveBaseName.set(pluginName)
     archiveVersion.set(pluginVersion)
+    archiveClassifier.set("bungee")
 }
 
 tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
-    archiveBaseName.set("$pluginName-bungee")
+    archiveBaseName.set(pluginName)
     archiveVersion.set(pluginVersion)
-    archiveClassifier.set("")
+    archiveClassifier.set("bungee")
 }
 
 tasks.build {

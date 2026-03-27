@@ -30,14 +30,16 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 tasks.jar {
-    archiveBaseName.set("$pluginName-velocity")
+    dependsOn(":core-api:jar")
+    archiveBaseName.set(pluginName)
     archiveVersion.set(pluginVersion)
+    archiveClassifier.set("velocity")
 }
 
 tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
-    archiveBaseName.set("$pluginName-velocity")
+    archiveBaseName.set(pluginName)
     archiveVersion.set(pluginVersion)
-    archiveClassifier.set("")
+    archiveClassifier.set("velocity")
 }
 
 tasks.build {
