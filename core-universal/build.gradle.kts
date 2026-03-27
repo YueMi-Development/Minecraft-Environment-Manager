@@ -13,7 +13,6 @@ dependencies {
 tasks.shadowJar {
     dependsOn(
         ":core-api:jar",
-        ":core-agent:jar",
         ":core-bukkit:shadowJar",
         ":core-bungeecord:shadowJar",
         ":core-velocity:shadowJar"
