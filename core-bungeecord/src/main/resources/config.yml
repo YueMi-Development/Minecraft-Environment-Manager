@@ -17,6 +17,12 @@ environments:
   # Loading the entire content of a file (non-.env)
   # PROMOTIONAL_TEXT: "@promo.txt"
 
+# Hijack Configuration (Requires Java Agent)
+# If enabled, changes are applied in-memory and intercepted at the JVM level.
+# No physical files are modified on disk.
+hijack:
+  enabled: false
+
 # Definitions of files to be updated by this plugin
 # Each target specifies a file path and a mapping of keys in that file to environment variables.
 targets:
