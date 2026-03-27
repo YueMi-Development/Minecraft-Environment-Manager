@@ -34,7 +34,6 @@ java {
 }
 
 tasks.jar {
-    dependsOn(":core-agent:jar")
     archiveBaseName.set(pluginName)
     archiveVersion.set(project.version.toString())
     archiveClassifier.set("")

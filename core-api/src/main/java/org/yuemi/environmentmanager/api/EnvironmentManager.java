@@ -5,7 +5,7 @@ import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.yuemi.environmentmanager.api.config.ConfigurationManager;
 import org.yuemi.environmentmanager.api.config.TextualConfigurationEditor;
-import org.yuemi.environmentmanager.api.HijackManager;
+import java.io.IOException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -58,16 +58,8 @@ public final class EnvironmentManager {
         }
 
         loadEnvironments();
-        loadHijackConfig();
     }
 
-    private void loadHijackConfig() {
-        boolean hijackEnabled = config.node("hijack", "enabled").getBoolean(false);
-        HijackManager.getInstance().setEnabled(hijackEnabled);
-        if (hijackEnabled) {
-            logger.info("Hijack mode is enabled. Changes will be applied in-memory.");
-        }
-    }
 
     /**
      * Reloads the configuration and re-applies environment keys to all targets.
@@ -220,13 +212,8 @@ public final class EnvironmentManager {
                 }
 
                 if (changed) {
-                    if (HijackManager.getInstance().isEnabled()) {
-                        HijackManager.getInstance().register(targetPath, content.getBytes(StandardCharsets.UTF_8));
-                        logger.info("Hijacked (in-memory): " + relativePath);
-                    } else {
-                        Files.writeString(targetPath, content);
-                        logger.info("Applied environment keys to: " + relativePath);
-                    }
+                    Files.writeString(targetPath, content);
+                    logger.info("Applied environment keys to: " + relativePath);
                 }
 
             } catch (IOException e) {
