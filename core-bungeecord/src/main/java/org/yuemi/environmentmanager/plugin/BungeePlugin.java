@@ -19,7 +19,7 @@ public final class BungeePlugin extends Plugin {
     private EnvironmentManager envManager;
 
     @Override
-    public void onEnable() {
+    public void onLoad() {
         if (!getDataFolder().exists()) {
             getDataFolder().mkdir();
         }
@@ -27,7 +27,9 @@ public final class BungeePlugin extends Plugin {
         File configFile = new File(getDataFolder(), "config.yml");
         if (!configFile.exists()) {
             try (InputStream in = getResourceAsStream("config.yml")) {
-                Files.copy(in, configFile.toPath());
+                if (in != null) {
+                    Files.copy(in, configFile.toPath());
+                }
             } catch (IOException e) {
                 getLogger().severe("Failed to save default config: " + e.getMessage());
             }
@@ -42,9 +44,11 @@ public final class BungeePlugin extends Plugin {
         } catch (ConfigurateException e) {
             getLogger().severe("Failed to load environment configuration: " + e.getMessage());
         }
+    }
 
+    @Override
+    public void onEnable() {
         getLogger().info("EnvironmentManager (BungeeCord) has been enabled!");
-
         getProxy().getPluginManager().registerCommand(this, new EnvCommand());
     }
 

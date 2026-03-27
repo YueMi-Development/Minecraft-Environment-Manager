@@ -18,7 +18,7 @@ public final class BukkitPlugin extends JavaPlugin implements CommandExecutor {
     private EnvironmentManager envManager;
 
     @Override
-    public void onEnable() {
+    public void onLoad() {
         saveDefaultConfig();
 
         ConfigurationManager configManager = new ConfigurationManager();
@@ -30,7 +30,10 @@ public final class BukkitPlugin extends JavaPlugin implements CommandExecutor {
         } catch (ConfigurateException e) {
             getLogger().severe("Failed to load environment configuration: " + e.getMessage());
         }
+    }
 
+    @Override
+    public void onEnable() {
         getCommand("envmanager").setExecutor(this);
     }
 
