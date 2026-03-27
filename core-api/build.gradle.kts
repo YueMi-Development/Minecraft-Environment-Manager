@@ -87,7 +87,8 @@ publishing {
     repositories {
         maven {
             name = "YuemiMaven"
-            url = uri(yuemiMaven)
+            val isSnapshot = project.version.toString().endsWith("-SNAPSHOT")
+            url = uri(if (isSnapshot) project.property("yuemiSnapshots")!! else project.property("yuemiReleases")!!)
 
             credentials {
                 username = System.getenv("MAVEN_USERNAME")
