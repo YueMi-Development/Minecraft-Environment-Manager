@@ -18,6 +18,11 @@ import java.util.logging.Logger;
  */
 public final class EnvironmentManager {
 
+    /**
+     * The latest supported configuration version.
+     */
+    public static final int LATEST_CONFIG_VERSION = 1;
+
     private final ConfigurationManager configManager;
     private final Logger logger;
     private final Map<String, String> environmentKeys = new HashMap<>();
@@ -44,7 +49,23 @@ public final class EnvironmentManager {
     public void loadConfig(@NotNull Path configPath) throws ConfigurateException {
         this.basePath = configPath.toAbsolutePath().getParent();
         this.config = configManager.load(configPath);
+
+        int currentVersion = config.node("config-version").getInt();
+        if (currentVersion < LATEST_CONFIG_VERSION) {
+            migrateConfig(configPath, currentVersion);
+        }
+
         loadEnvironments();
+    }
+
+    private void migrateConfig(Path configPath, int currentVersion) {
+        logger.info("Migrating configuration from version " + currentVersion + " to " + LATEST_CONFIG_VERSION);
+        try {
+            config.node("config-version").set(LATEST_CONFIG_VERSION);
+            configManager.save(configPath, config);
+        } catch (ConfigurateException e) {
+            logger.severe("Failed to save migrated configuration: " + e.getMessage());
+        }
     }
 
     private void loadEnvironments() {
