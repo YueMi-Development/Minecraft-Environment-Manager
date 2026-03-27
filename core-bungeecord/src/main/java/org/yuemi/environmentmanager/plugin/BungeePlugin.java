@@ -1,7 +1,7 @@
-package org.yuemi.example.plugin;
+package org.yuemi.environmentmanager.plugin;
 
 import net.md_5.bungee.api.plugin.Plugin;
-import org.yuemi.example.api.ExampleApi;
+import org.yuemi.environmentmanager.api.ExampleApi;
 
 public final class BungeePlugin extends Plugin {
 

@@ -21,5 +21,6 @@ subprojects {
         maven("https://oss.sonatype.org/content/repositories/snapshots")
         maven("https://repo.md-5.net/content/repositories/snapshots/")
         maven("https://repo.codemc.io/repository/maven-public/")
+        maven("https://repo.spongepowered.org/repository/maven-public/")
     }
 }

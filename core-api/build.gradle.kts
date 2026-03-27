@@ -19,6 +19,10 @@ dependencies {
     // Platform-independent messaging
     api("net.kyori:adventure-api:4.19.0")
     api("net.kyori:adventure-text-minimessage:4.19.0")
+
+    // Configuration / File Parsing
+    api("org.spongepowered:configurate-yaml:4.1.2")
+    api("org.spongepowered:configurate-gson:4.1.2")
 }
 
 java {

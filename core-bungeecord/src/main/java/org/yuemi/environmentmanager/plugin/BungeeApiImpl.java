@@ -1,11 +1,11 @@
-package org.yuemi.example.plugin;
+package org.yuemi.environmentmanager.plugin;
 
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import org.jetbrains.annotations.NotNull;
-import org.yuemi.example.api.ExampleApi;
+import org.yuemi.environmentmanager.api.ExampleApi;
 
 import java.util.UUID;
 

@@ -1,5 +1,5 @@
 name: ExamplePlugin
 version: 1.0.0
-main: org.yuemi.Main
+main: org.yuemi.environmentmanager.plugin.ExamplePlugin
 api-version: 1.21
 author: YueMi-Development
