@@ -13,6 +13,7 @@ A cross-platform (Bukkit, Velocity, BungeeCord) tool to manage environment-speci
 - **LIFO Conflict Resolution**: Later environment definitions override earlier ones.
 - **Auto-Versioning & Migration**: Automatically updates configuration files to the latest version.
 - **Reloadable**: Apply changes instantly using `/envmanager reload`.
+- **Hijack Mode (Agent)**: Apply changes in-memory without modifying files on disk using a Java Agent.
 
 ## How it Works
 
@@ -39,6 +40,12 @@ environments:
   # Loading the entire content of a file (useful for scripts or keys)
   PROMOTIONAL_TEXT: "@promo.txt"
 
+# Hijack Configuration (Requires Java Agent)
+# If enabled, changes are applied in-memory and intercepted at the JVM level.
+# No physical files are modified on disk.
+hijack:
+  enabled: false
+
 # Definitions of files to be updated by this plugin
 targets:
   # Apply to a YAML file
@@ -59,6 +66,26 @@ targets:
       "application.debug": "STAGING"
 ```
 
+## Hijack Mode (Java Agent)
+
+Hijack Mode is a powerful feature that allows the Environment Manager to intercept file access calls at the JVM level. When enabled, the plugin provides a "virtual" view of configuration files to other plugins, applying your environment variables in-memory without ever writing them to the physical file on disk.
+
+### How to use
+1. Enable `hijack.enabled: true` in your `config.yml`.
+2. Add the agent to your server startup command:
+   ```bash
+   java -javaagent:EnvironmentManager-agent.jar -jar your-server.jar
+   ```
+
+### Pros and Cons
+
+| Feature | Pros | Cons |
+| :--- | :--- | :--- |
+| **Persistence** | Original files on disk remain untouched (perfect for immutable/cloud setups). | If the agent is removed, the server reverts to original disk values immediately. |
+| **Performance** | Bypasses disk I/O for environment-specific configuration values. | Minor overhead at startup for bytecode instrumentation. |
+| **Compatibility**| Works with any plugin (e.g., LuckPerms, Essentials) regardless of their code. | Requires a `-javaagent` JVM startup argument. |
+| **Maintenance** | No need to "revert" or "clean up" files on shutdown. | Debugging can be more complex as what you see on disk isn't what the plugin sees. |
+
 ## Build
 
 To build the project and generate shaded JARs for all platforms:
@@ -71,3 +98,4 @@ The resulting JARs will be found in:
 - `core-bukkit/build/libs/`
 - `core-velocity/build/libs/`
 - `core-bungeecord/build/libs/`
+- `core-agent/build/libs/` (The Java Agent)

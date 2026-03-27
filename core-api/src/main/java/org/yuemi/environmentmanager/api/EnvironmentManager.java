@@ -4,6 +4,12 @@ import org.jetbrains.annotations.NotNull;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.yuemi.environmentmanager.api.config.ConfigurationManager;
+import org.yuemi.environmentmanager.api.HijackManager;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -56,6 +62,15 @@ public final class EnvironmentManager {
         }
 
         loadEnvironments();
+        loadHijackConfig();
+    }
+
+    private void loadHijackConfig() {
+        boolean hijackEnabled = config.node("hijack", "enabled").getBoolean(false);
+        HijackManager.getInstance().setEnabled(hijackEnabled);
+        if (hijackEnabled) {
+            logger.info("Hijack mode is enabled. Changes will be applied in-memory.");
+        }
     }
 
     /**
@@ -207,14 +222,62 @@ public final class EnvironmentManager {
                 }
 
                 if (changed) {
-                    configManager.save(targetPath, targetConfig);
-                    logger.info("Applied environment keys to: " + relativePath);
+                    if (HijackManager.getInstance().isEnabled()) {
+                        byte[] hijackedContent = serializeToByteArray(targetPath, targetConfig);
+                        if (hijackedContent != null) {
+                            HijackManager.getInstance().register(targetPath, hijackedContent);
+                            logger.info("Hijacked (in-memory): " + relativePath);
+                        }
+                    } else {
+                        configManager.save(targetPath, targetConfig);
+                        logger.info("Applied environment keys to: " + relativePath);
+                    }
                 }
 
             } catch (ConfigurateException e) {
                 logger.severe("Failed to apply environment keys to " + relativePath + ": " + e.getMessage());
             }
         });
+    }
+
+    private byte[] serializeToByteArray(Path path, ConfigurationNode node) {
+        try {
+            String extension = getExtension(path);
+            StringWriter writer = new StringWriter();
+            
+            try (BufferedWriter bufferedWriter = new BufferedWriter(writer)) {
+                if (extension.equalsIgnoreCase("yml") || extension.equalsIgnoreCase("yaml")) {
+                    org.spongepowered.configurate.yaml.YamlConfigurationLoader.builder()
+                            .sink(() -> bufferedWriter)
+                            .build()
+                            .save(node);
+                } else if (extension.equalsIgnoreCase("json")) {
+                    org.spongepowered.configurate.gson.GsonConfigurationLoader.builder()
+                            .sink(() -> bufferedWriter)
+                            .build()
+                            .save(node);
+                } else if (extension.equalsIgnoreCase("conf")) {
+                    org.spongepowered.configurate.hocon.HoconConfigurationLoader.builder()
+                            .sink(() -> bufferedWriter)
+                            .build()
+                            .save(node);
+                } else {
+                    return null;
+                }
+                bufferedWriter.flush();
+            }
+
+            return writer.toString().getBytes(StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            logger.severe("Failed to serialize hijacked config for " + path + ": " + e.getMessage());
+            return null;
+        }
+    }
+
+    private String getExtension(Path path) {
+        String filename = path.getFileName().toString();
+        int lastIndex = filename.lastIndexOf('.');
+        return (lastIndex == -1) ? "" : filename.substring(lastIndex + 1);
     }
 
     /**
