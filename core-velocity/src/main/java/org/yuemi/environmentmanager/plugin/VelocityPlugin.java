@@ -12,7 +12,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.slf4j.Logger;
 import org.spongepowered.configurate.ConfigurateException;
 import org.yuemi.environmentmanager.api.EnvironmentManager;
-import org.yuemi.environmentmanager.api.ExampleApi;
 import org.yuemi.environmentmanager.api.config.ConfigurationManager;
 
 import java.nio.file.Path;
@@ -28,7 +27,6 @@ public final class VelocityPlugin {
     private final ProxyServer server;
     private final Logger logger;
     private final Path dataDirectory;
-    private ExampleApi api;
     private EnvironmentManager envManager;
 
     @Inject
@@ -50,7 +48,6 @@ public final class VelocityPlugin {
             logger.error("Failed to load environment configuration: " + e.getMessage());
         }
 
-        this.api = new VelocityApiImpl(server);
         logger.info("EnvironmentManager (Velocity) has been enabled!");
 
         server.getCommandManager().register("envmanager", new EnvCommand());

@@ -1,4 +1,4 @@
-name: ExamplePlugin
+name: EnvironmentManager
 main: org.yuemi.environmentmanager.plugin.BungeePlugin
 version: 1.0.0-SNAPSHOT
 authors: [YueMi-Development, NekoMonci12]

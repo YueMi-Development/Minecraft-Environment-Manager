@@ -1,6 +1,6 @@
-name: ExamplePlugin
+name: EnvironmentManager
 version: 1.0.0
-main: org.yuemi.environmentmanager.plugin.ExamplePlugin
+main: org.yuemi.environmentmanager.plugin.BukkitPlugin
 api-version: 1.21
 authors: [YueMi-Development, NekoMonci12]
 commands:

@@ -9,10 +9,10 @@ environments:
 # Definitions of files to be updated by this plugin
 # Each target specifies a file path and a mapping of keys in that file to environment variables.
 targets:
-  - path: "plugins/ExamplePlugin/config.yml"
+  - path: "plugins/MyTargetPlugin/config.yml"
     mappings:
       "mysql.host": "DB_HOST"
       "mysql.username": "DB_USER"
-  - path: "plugins/ExamplePlugin/settings.json"
+  - path: "plugins/MyTargetPlugin/settings.json"
     mappings:
       "debug_mode": "STAGING"

@@ -14,7 +14,7 @@ A cross-platform (Bukkit, Velocity, BungeeCord) tool to manage environment-speci
 
 The plugin uses a `config.yml` to define mappings between environment keys and target configuration files.
 
-### Example `config.yml`
+### Environment Manager `config.yml`
 ```yaml
 # Global environment variables
 environments:

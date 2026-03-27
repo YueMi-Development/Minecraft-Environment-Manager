@@ -6,7 +6,6 @@ import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Plugin;
 import org.spongepowered.configurate.ConfigurateException;
 import org.yuemi.environmentmanager.api.EnvironmentManager;
-import org.yuemi.environmentmanager.api.ExampleApi;
 import org.yuemi.environmentmanager.api.config.ConfigurationManager;
 
 import java.io.File;
@@ -17,7 +16,6 @@ import java.nio.file.Path;
 
 public final class BungeePlugin extends Plugin {
 
-    private ExampleApi api;
     private EnvironmentManager envManager;
 
     @Override
@@ -45,7 +43,6 @@ public final class BungeePlugin extends Plugin {
             getLogger().severe("Failed to load environment configuration: " + e.getMessage());
         }
 
-        this.api = new BungeeApiImpl(getProxy());
         getLogger().info("EnvironmentManager (BungeeCord) has been enabled!");
 
         getProxy().getPluginManager().registerCommand(this, new EnvCommand());
