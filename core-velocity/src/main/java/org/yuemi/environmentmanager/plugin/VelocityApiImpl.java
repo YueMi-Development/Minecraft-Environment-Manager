@@ -1,9 +1,9 @@
-package org.yuemi.example.plugin;
+package org.yuemi.environmentmanager.plugin;
 
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.jetbrains.annotations.NotNull;
-import org.yuemi.example.api.ExampleApi;
+import org.yuemi.environmentmanager.api.ExampleApi;
 
 import java.util.UUID;
 

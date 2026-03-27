@@ -1,10 +1,10 @@
-package org.yuemi.example.plugin;
+package org.yuemi.environmentmanager.plugin;
 
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.yuemi.example.api.ExampleApi;
+import org.yuemi.environmentmanager.api.ExampleApi;
 
 import java.util.UUID;
 

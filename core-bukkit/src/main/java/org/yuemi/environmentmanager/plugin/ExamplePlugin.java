@@ -1,8 +1,8 @@
-package org.yuemi.example.plugin;
+package org.yuemi.environmentmanager.plugin;
 
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.yuemi.example.api.ExampleApi;
+import org.yuemi.environmentmanager.api.ExampleApi;
 
 public final class ExamplePlugin extends JavaPlugin {
 

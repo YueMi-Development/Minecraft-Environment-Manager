@@ -1,4 +1,4 @@
-package org.yuemi.example.api;
+package org.yuemi.environmentmanager.api;
 
 import org.jetbrains.annotations.NotNull;
 
