@@ -14,6 +14,14 @@ dependencies {
     implementation("net.kyori:adventure-text-serializer-bungeecord:4.3.4")
 }
 
+tasks.processResources {
+    val props = mapOf("version" to project.version)
+    inputs.properties(props)
+    filesMatching("bungee.yml") {
+        expand(props)
+    }
+}
+
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
 }

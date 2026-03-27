@@ -19,7 +19,7 @@ import java.nio.file.Path;
 @Plugin(
         id = "environment-manager",
         name = "EnvironmentManager",
-        version = "1.0.0-SNAPSHOT",
+        version = "@version@",
         authors = {"YueMi-Development", "NekoMonci12"}
 )
 public final class VelocityPlugin {

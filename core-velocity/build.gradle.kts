@@ -13,6 +13,18 @@ dependencies {
     annotationProcessor("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
 }
 
+val generateSources = tasks.register<Copy>("generateSources") {
+    val props = mapOf("version" to project.version)
+    inputs.properties(props)
+    from("src/main/java")
+    into("build/generated/sources/version")
+    filter(org.apache.tools.ant.filters.ReplaceTokens::class, "tokens" to mapOf("version" to project.version))
+}
+
+sourceSets.main {
+    java.setSrcDirs(listOf(generateSources))
+}
+
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
 }
