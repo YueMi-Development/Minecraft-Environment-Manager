@@ -21,7 +21,7 @@ import java.nio.file.Path;
         id = "environment-manager",
         name = "EnvironmentManager",
         version = "1.0.0-SNAPSHOT",
-        authors = {"YueMi-Development"}
+        authors = {"YueMi-Development", "NekoMonci12"}
 )
 public final class VelocityPlugin {
 
