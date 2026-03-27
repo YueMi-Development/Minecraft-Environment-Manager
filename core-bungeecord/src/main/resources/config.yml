@@ -6,6 +6,16 @@ environments:
   DB_USER: "root"
   STAGING: "true"
 
+  # Examples of new features:
+  # Bulk loading from a .env file (Last-in Wins / LIFO)
+  # "@": ".env"
+
+  # Loading a specific key from a .env file
+  # DB_PASSWORD: "@secrets/.env"
+
+  # Loading the entire content of a file (non-.env)
+  # PROMOTIONAL_TEXT: "@promo.txt"
+
 # Definitions of files to be updated by this plugin
 # Each target specifies a file path and a mapping of keys in that file to environment variables.
 targets:
@@ -16,3 +26,6 @@ targets:
   - path: "plugins/MyTargetPlugin/settings.json"
     mappings:
       "debug_mode": "STAGING"
+  - path: "plugins/MyTargetPlugin/config.conf"
+    mappings:
+      "application.debug": "STAGING"
