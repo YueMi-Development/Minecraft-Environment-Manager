@@ -4,13 +4,15 @@ plugins {
 }
 
 val pluginName: String by project
-val yuemiMaven: String by project
+val yuemiSnapshots: String by project
+val yuemiReleases: String by project
 val repoUrl: String by project
 val developerId: String by project
 val developerName: String by project
 
 require(pluginName.isNotBlank())
-require(yuemiMaven.isNotBlank())
+require(yuemiSnapshots.isNotBlank())
+require(yuemiReleases.isNotBlank())
 require(repoUrl.isNotBlank())
 require(developerId.isNotBlank())
 require(developerName.isNotBlank())
