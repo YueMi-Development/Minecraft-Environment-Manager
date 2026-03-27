@@ -11,6 +11,7 @@ dependencies {
 }
 
 tasks.shadowJar {
+    dependsOn(":core-bukkit:shadowJar", ":core-bungeecord:shadowJar", ":core-velocity:shadowJar")
     archiveBaseName.set(project.property("pluginName") as String)
     archiveClassifier.set("universal")
     archiveVersion.set(project.version.toString())
