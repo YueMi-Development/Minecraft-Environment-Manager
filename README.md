@@ -5,28 +5,58 @@ A cross-platform (Bukkit, Velocity, BungeeCord) tool to manage environment-speci
 ## Features
 
 - **Cross-Platform**: Support for Paper/Spigot, Velocity, and BungeeCord.
-- **Centralized Environment Keys**: Store global environment variables in a single `config.yml`.
-- **Target Mapping**: Automatically apply environment keys to specific paths and keys in other plugin configuration files (YAML, JSON supported).
+- **Multiple Formats**: Support for YAML, HOCON (`.conf`), and JSON configuration files.
+- **Environment Variable Loading**:
+    - **Bulk load from `.env`**: Automatically load multiple keys from a `.env` file.
+    - **Specific key loading**: Load specific values from `.env` files.
+    - **File content loading**: Use the raw content of any file as an environment value.
+- **LIFO Conflict Resolution**: Later environment definitions override earlier ones.
+- **Auto-Versioning & Migration**: Automatically updates configuration files to the latest version.
 - **Reloadable**: Apply changes instantly using `/envmanager reload`.
-- **Extensible API**: Built on [Configurate](https://github.com/SpongePowered/Configurate) for easy extension to other file formats.
 
 ## How it Works
 
-The plugin uses a `config.yml` to define mappings between environment keys and target configuration files.
+The plugin uses a main configuration file (`config.yml`, `config.conf`, or `config.json`) to define mappings between environment keys and target configuration files.
 
-### Environment Manager `config.yml`
+### Configuration Example (`config.yml`)
+
 ```yaml
+# Configuration version (managed automatically)
+config-version: 1
+
 # Global environment variables
 environments:
+  # Direct definition
   DB_HOST: "localhost"
-  API_SECRET: "secret-123"
+  STAGING: "true"
 
-# Targets to apply environment keys to
+  # Bulk load from a .env file (Last-in Wins / LIFO)
+  "@": ".env"
+
+  # Loading a specific key from a .env file
+  DB_PASSWORD: "@secrets/.env"
+
+  # Loading the entire content of a file (useful for scripts or keys)
+  PROMOTIONAL_TEXT: "@promo.txt"
+
+# Definitions of files to be updated by this plugin
 targets:
+  # Apply to a YAML file
   - path: "plugins/MyPlugin/config.yml"
     mappings:
       "mysql.host": "DB_HOST"
-      "authentication.key": "API_SECRET"
+      "mysql.password": "DB_PASSWORD"
+      "debug_mode": "STAGING"
+
+  # Apply to a JSON file
+  - path: "plugins/MyPlugin/settings.json"
+    mappings:
+      "api.key": "PROMOTIONAL_TEXT"
+
+  # Apply to a HOCON file
+  - path: "plugins/MyPlugin/config.conf"
+    mappings:
+      "application.debug": "STAGING"
 ```
 
 ## Build
