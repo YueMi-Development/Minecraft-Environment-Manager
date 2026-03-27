@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+/**
+ * Manager class for environment variables and their application to target files.
+ */
 public final class EnvironmentManager {
 
     private final ConfigurationManager configManager;
@@ -21,11 +24,23 @@ public final class EnvironmentManager {
     private ConfigurationNode config;
     private Path basePath;
 
+    /**
+     * Constructs a new EnvironmentManager.
+     *
+     * @param configManager the configuration manager
+     * @param logger        the logger
+     */
     public EnvironmentManager(@NotNull ConfigurationManager configManager, @NotNull Logger logger) {
         this.configManager = configManager;
         this.logger = logger;
     }
 
+    /**
+     * Loads the environment configuration from a path.
+     *
+     * @param configPath the path to the configuration file
+     * @throws ConfigurateException if an error occurs during loading
+     */
     public void loadConfig(@NotNull Path configPath) throws ConfigurateException {
         this.basePath = configPath.toAbsolutePath().getParent();
         this.config = configManager.load(configPath);
@@ -123,6 +138,11 @@ public final class EnvironmentManager {
         return value;
     }
 
+    /**
+     * Applies the environment keys to the target files.
+     *
+     * @param rootPath the root path to resolve relative target paths
+     */
     public void applyEnvironmentKeys(@NotNull Path rootPath) {
         ConfigurationNode targetsNode = config.node("targets");
         if (targetsNode.virtual()) return;
@@ -161,6 +181,11 @@ public final class EnvironmentManager {
         });
     }
 
+    /**
+     * Gets the loaded environment keys.
+     *
+     * @return a map of environment keys and their values
+     */
     public Map<String, String> getEnvironmentKeys() {
         return new HashMap<>(environmentKeys);
     }

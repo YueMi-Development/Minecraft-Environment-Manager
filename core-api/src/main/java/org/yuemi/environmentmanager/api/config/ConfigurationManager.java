@@ -12,10 +12,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Manager class for handling different configuration formats.
+ */
 public final class ConfigurationManager {
 
     private final Map<String, ConfigurationProvider> providers = new HashMap<>();
 
+    /**
+     * Constructs a new ConfigurationManager with default providers.
+     */
     public ConfigurationManager() {
         registerDefaultProviders();
     }
@@ -27,10 +33,23 @@ public final class ConfigurationManager {
         registerProvider("conf", new HoconProvider());
     }
 
+    /**
+     * Registers a configuration provider for a specific file extension.
+     *
+     * @param extension the file extension (e.g., "yml")
+     * @param provider  the configuration provider
+     */
     public void registerProvider(@NotNull String extension, @NotNull ConfigurationProvider provider) {
         providers.put(extension.toLowerCase(), provider);
     }
 
+    /**
+     * Loads a configuration node from a path.
+     *
+     * @param path the path to load from
+     * @return the loaded configuration node
+     * @throws ConfigurateException if an error occurs during loading or no provider is found
+     */
     @NotNull
     public ConfigurationNode load(@NotNull Path path) throws ConfigurateException {
         String extension = getExtension(path);
@@ -43,6 +62,13 @@ public final class ConfigurationManager {
         return provider.load(path);
     }
 
+    /**
+     * Saves a configuration node to a path.
+     *
+     * @param path the path to save to
+     * @param node the configuration node to save
+     * @throws ConfigurateException if an error occurs during saving or no provider is found
+     */
     public void save(@NotNull Path path, @NotNull ConfigurationNode node) throws ConfigurateException {
         String extension = getExtension(path);
         ConfigurationProvider provider = providers.get(extension.toLowerCase());
