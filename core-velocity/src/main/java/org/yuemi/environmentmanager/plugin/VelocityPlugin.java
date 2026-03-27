@@ -14,6 +14,9 @@ import org.spongepowered.configurate.ConfigurateException;
 import org.yuemi.environmentmanager.api.EnvironmentManager;
 import org.yuemi.environmentmanager.api.config.ConfigurationManager;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 @Plugin(
@@ -38,6 +41,7 @@ public final class VelocityPlugin {
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
+        saveDefaultConfig();
         ConfigurationManager configManager = new ConfigurationManager();
         this.envManager = new EnvironmentManager(configManager, java.util.logging.Logger.getLogger("EnvironmentManager"));
 
@@ -51,6 +55,32 @@ public final class VelocityPlugin {
         logger.info("EnvironmentManager (Velocity) has been enabled!");
 
         server.getCommandManager().register("envmanager", new EnvCommand());
+    }
+
+    private void saveDefaultConfig() {
+        if (Files.exists(dataDirectory.resolve("config.yml"))) {
+            return;
+        }
+
+        if (!Files.exists(dataDirectory)) {
+            try {
+                Files.createDirectories(dataDirectory);
+            } catch (IOException e) {
+                logger.error("Failed to create data directory: " + e.getMessage());
+                return;
+            }
+        }
+
+        try (InputStream in = getClass().getResourceAsStream("/config.yml")) {
+            if (in == null) {
+                logger.error("Failed to find default config.yml in resources.");
+                return;
+            }
+            Files.copy(in, dataDirectory.resolve("config.yml"));
+            logger.info("Generated default config.yml");
+        } catch (IOException e) {
+            logger.error("Failed to save default config: " + e.getMessage());
+        }
     }
 
     private final class EnvCommand implements SimpleCommand {
