@@ -3,3 +3,7 @@ version: 1.0.0
 main: org.yuemi.environmentmanager.plugin.ExamplePlugin
 api-version: 1.21
 author: YueMi-Development
+commands:
+  envmanager:
+    description: Manage environment keys
+    permission: envmanager.command

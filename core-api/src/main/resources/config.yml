@@ -1,0 +1,18 @@
+# Environment Manager Configuration
+
+# Global environment variables that can be referenced in targets
+environments:
+  DB_HOST: "localhost"
+  DB_USER: "root"
+  STAGING: "true"
+
+# Definitions of files to be updated by this plugin
+# Each target specifies a file path and a mapping of keys in that file to environment variables.
+targets:
+  - path: "plugins/ExamplePlugin/config.yml"
+    mappings:
+      "mysql.host": "DB_HOST"
+      "mysql.username": "DB_USER"
+  - path: "plugins/ExamplePlugin/settings.json"
+    mappings:
+      "debug_mode": "STAGING"
