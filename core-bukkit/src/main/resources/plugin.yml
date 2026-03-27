@@ -1,5 +1,5 @@
 name: EnvironmentManager
-version: 1.0.0
+version: ${version}
 main: org.yuemi.environmentmanager.plugin.BukkitPlugin
 api-version: 1.21
 authors: [YueMi-Development, NekoMonci12]
