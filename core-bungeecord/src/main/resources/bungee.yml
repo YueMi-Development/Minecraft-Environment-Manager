@@ -1,4 +1,5 @@
 name: EnvironmentManager
 main: org.yuemi.environmentmanager.plugin.BungeePlugin
+load: STARTUP
 version: ${version}
 authors: [YueMi-Development, NekoMonci12]

@@ -108,7 +108,8 @@ public final class EnvironmentManager {
                 if (key.startsWith("@")) {
                     // Bulk load from .env
                     if (value != null) {
-                        loadFromEnvFile(basePath.resolve(value));
+                        String actualPath = value.startsWith("@") ? value.substring(1) : value;
+                        loadFromEnvFile(basePath.resolve(actualPath));
                     }
                 } else if (value != null && value.startsWith("@")) {
                     String subPath = value.substring(1);
@@ -138,13 +139,14 @@ public final class EnvironmentManager {
     }
 
     private void loadFromEnvFile(Path filePath) {
+        Path absPath = filePath.toAbsolutePath().normalize();
         try {
-            List<String> lines = Files.readAllLines(filePath);
+            List<String> lines = Files.readAllLines(absPath);
             for (String line : lines) {
                 parseAndPutEnvLine(line);
             }
         } catch (IOException e) {
-            logger.severe("Failed to load .env file: " + filePath + " - " + e.getMessage());
+            logger.severe("Failed to load .env file: " + absPath + " - " + e.getMessage());
         }
     }
 
@@ -264,7 +266,6 @@ public final class EnvironmentManager {
                 } else {
                     return null;
                 }
-                bufferedWriter.flush();
             }
 
             return writer.toString().getBytes(StandardCharsets.UTF_8);

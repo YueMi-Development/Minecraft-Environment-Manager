@@ -1,6 +1,16 @@
 name: EnvironmentManager
 version: ${version}
 main: org.yuemi.environmentmanager.plugin.BukkitPlugin
+load: STARTUP
+loadbefore: [
+  Vault,
+  LuckPerms,
+  Essentials,
+  EssentialsChat,
+  EssentialsSpawn,
+  ProtocolLib,
+  BungeeGuard
+]
 api-version: 1.21
 authors: [YueMi-Development, NekoMonci12]
 commands:

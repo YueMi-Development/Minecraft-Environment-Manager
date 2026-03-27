@@ -37,10 +37,8 @@ public final class VelocityPlugin {
         this.server = server;
         this.logger = logger;
         this.dataDirectory = dataDirectory;
-    }
 
-    @Subscribe
-    public void onProxyInitialization(ProxyInitializeEvent event) {
+        // Load and apply environment keys as early as possible (in constructor)
         saveDefaultConfig();
         ConfigurationManager configManager = new ConfigurationManager();
         this.envManager = new EnvironmentManager(configManager, java.util.logging.Logger.getLogger("EnvironmentManager"));
@@ -51,9 +49,11 @@ public final class VelocityPlugin {
         } catch (ConfigurateException e) {
             logger.error("Failed to load environment configuration: " + e.getMessage());
         }
+    }
 
+    @Subscribe
+    public void onProxyInitialization(ProxyInitializeEvent event) {
         logger.info("EnvironmentManager (Velocity) has been enabled!");
-
         server.getCommandManager().register("envmanager", new EnvCommand());
     }
 
