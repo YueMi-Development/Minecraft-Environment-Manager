@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.gson.GsonConfigurationLoader;
+import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
 import java.nio.file.Path;
@@ -23,6 +24,7 @@ public final class ConfigurationManager {
         registerProvider("yml", new YamlProvider());
         registerProvider("yaml", new YamlProvider());
         registerProvider("json", new JsonProvider());
+        registerProvider("conf", new HoconProvider());
     }
 
     public void registerProvider(@NotNull String extension, @NotNull ConfigurationProvider provider) {
@@ -79,6 +81,18 @@ public final class ConfigurationManager {
         @Override
         public void save(@NotNull Path path, @NotNull ConfigurationNode node) throws ConfigurateException {
             GsonConfigurationLoader.builder().path(path).build().save(node);
+        }
+    }
+
+    private static final class HoconProvider implements ConfigurationProvider {
+        @Override
+        public @NotNull ConfigurationNode load(@NotNull Path path) throws ConfigurateException {
+            return HoconConfigurationLoader.builder().path(path).build().load();
+        }
+
+        @Override
+        public void save(@NotNull Path path, @NotNull ConfigurationNode node) throws ConfigurateException {
+            HoconConfigurationLoader.builder().path(path).build().save(node);
         }
     }
 }
