@@ -41,8 +41,9 @@ public class TextualConfigurationEditorTest {
         assertEquals("\"already quoted\"", formatValue.invoke(null, "\"already quoted\""));
         assertEquals("'already quoted'", formatValue.invoke(null, "'already quoted'"));
         
-        // Null
+        // Null and Empty
         assertEquals("null", formatValue.invoke(null, (Object) null));
+        assertEquals("''", formatValue.invoke(null, ""));
     }
 
     @Test
@@ -51,6 +52,15 @@ public class TextualConfigurationEditorTest {
         String updated = TextualConfigurationEditor.update(content, "database.password", "@SriwijayaRootDB1234");
         
         String expected = "database:\n  host: localhost\n  password: \"@SriwijayaRootDB1234\"";
+        assertEquals(expected, updated);
+    }
+
+    @Test
+    public void testUpdateWithEmptyValue() {
+        String content = "database:\n  host: localhost\n  password: oldpassword";
+        String updated = TextualConfigurationEditor.update(content, "database.password", "");
+        
+        String expected = "database:\n  host: localhost\n  password: ''";
         assertEquals(expected, updated);
     }
 }

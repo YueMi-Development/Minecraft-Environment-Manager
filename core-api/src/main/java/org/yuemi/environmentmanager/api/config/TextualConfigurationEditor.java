@@ -116,6 +116,8 @@ public final class TextualConfigurationEditor {
     
     private static String formatValue(String value) {
         if (value == null) return "null";
+        // If the value is explicitly empty, use '' (standard for empty string in YAML/HOCON)
+        if (value.isEmpty()) return "''";
 
         // Characters that should trigger quoting if present anywhere
         boolean containsSpecial = value.contains(" ") || value.contains("#") || 
