@@ -115,9 +115,26 @@ public final class TextualConfigurationEditor {
     }
     
     private static String formatValue(String value) {
-        // Basic escaping for strings with special characters
-        if (value.contains(" ") || value.contains("#") || value.contains(":") || value.contains("=") || value.contains("\"")) {
-            if (!value.startsWith("\"")) {
+        if (value == null) return "null";
+
+        // Characters that should trigger quoting if present anywhere
+        boolean containsSpecial = value.contains(" ") || value.contains("#") || 
+                                value.contains(":") || value.contains("=") || 
+                                value.contains("\"") || value.contains("'");
+        
+        // Characters that should trigger quoting if they start the value (YAML special)
+        boolean startsWithSpecial = false;
+        if (!value.isEmpty()) {
+            char first = value.charAt(0);
+            String specialStarts = "!&*-?{}[],#|>%@`";
+            startsWithSpecial = specialStarts.indexOf(first) != -1;
+        }
+
+        if (containsSpecial || startsWithSpecial) {
+            // Only quote if not already surrounded by matching quotes
+            boolean isQuoted = (value.startsWith("\"") && value.endsWith("\"")) || 
+                             (value.startsWith("'") && value.endsWith("'"));
+            if (!isQuoted) {
                 return "\"" + value.replace("\"", "\\\"") + "\"";
             }
         }
