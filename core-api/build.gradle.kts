@@ -26,6 +26,13 @@ dependencies {
     api("org.spongepowered:configurate-yaml:4.1.2")
     api("org.spongepowered:configurate-gson:4.1.2")
     api("org.spongepowered:configurate-hocon:4.1.2")
+
+    testImplementation(platform("org.junit:junit-bom:5.10.1"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 java {

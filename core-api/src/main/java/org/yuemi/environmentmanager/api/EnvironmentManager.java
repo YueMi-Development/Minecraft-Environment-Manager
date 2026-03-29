@@ -120,7 +120,7 @@ public final class EnvironmentManager {
                         }
                     }
                 } else if (value != null) {
-                    environmentKeys.put(key, value);
+                    environmentKeys.put(key, expandVariables(value));
                 }
             });
         }
@@ -149,7 +149,7 @@ public final class EnvironmentManager {
                 if (eqIndex > 0) {
                     String key = line.substring(0, eqIndex).trim();
                     if (key.equals(targetKey)) {
-                        return cleanEnvValue(line.substring(eqIndex + 1).trim());
+                        return expandVariables(cleanEnvValue(line.substring(eqIndex + 1).trim()));
                     }
                 }
             }
@@ -165,7 +165,7 @@ public final class EnvironmentManager {
         int eqIndex = line.indexOf('=');
         if (eqIndex > 0) {
             String key = line.substring(0, eqIndex).trim();
-            String value = cleanEnvValue(line.substring(eqIndex + 1).trim());
+            String value = expandVariables(cleanEnvValue(line.substring(eqIndex + 1).trim()));
             environmentKeys.put(key, value);
         }
     }
@@ -204,8 +204,8 @@ public final class EnvironmentManager {
                     String targetKey = entry.getKey().toString();
                     String envKey = entry.getValue().getString();
 
-                    if (envKey != null && environmentKeys.containsKey(envKey)) {
-                        String value = environmentKeys.get(envKey);
+                    if (envKey != null) {
+                        String value = resolveMappingValue(envKey);
                         content = TextualConfigurationEditor.update(content, targetKey, value);
                         changed = true;
                     }
@@ -230,5 +230,49 @@ public final class EnvironmentManager {
      */
     public Map<String, String> getEnvironmentKeys() {
         return new HashMap<>(environmentKeys);
+    }
+
+    String resolveMappingValue(String envKey) {
+        if (envKey == null) return null;
+        if (envKey.length() >= 2 && ((envKey.startsWith("\"") && envKey.endsWith("\"")) || (envKey.startsWith("'") && envKey.endsWith("'")))) {
+            return envKey.substring(1, envKey.length() - 1);
+        }
+        return environmentKeys.getOrDefault(envKey, envKey);
+    }
+
+    private String expandVariables(String value) {
+        if (value == null || value.isEmpty()) return value;
+
+        StringBuilder result = new StringBuilder();
+        int i = 0;
+        int len = value.length();
+
+        while (i < len) {
+            char c = value.charAt(i);
+            if (c == '$' && i + 1 < len && value.charAt(i + 1) == '{') {
+                // Potential variable: ${VAR}
+                int close = value.indexOf('}', i + 2);
+                if (close != -1) {
+                    String varName = value.substring(i + 2, close);
+                    String varValue = environmentKeys.getOrDefault(varName, System.getenv(varName));
+                    result.append(varValue != null ? varValue : "${" + varName + "}");
+                    i = close + 1;
+                    continue;
+                }
+            } else if (c == '{' && i + 1 < len && value.charAt(i + 1) == '$') {
+                // Potential variable: {$VAR}
+                int close = value.indexOf('}', i + 2);
+                if (close != -1) {
+                    String varName = value.substring(i + 2, close);
+                    String varValue = environmentKeys.getOrDefault(varName, System.getenv(varName));
+                    result.append(varValue != null ? varValue : "{$" + varName + "}");
+                    i = close + 1;
+                    continue;
+                }
+            }
+            result.append(c);
+            i++;
+        }
+        return result.toString();
     }
 }
