@@ -11,7 +11,7 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-rootProject.name = "Minecraft-Plugin-Templates"
+rootProject.name = "EnvironmentManager"
 include("core-api")
 include("core-bukkit")
 include("core-velocity")
