@@ -1,3 +1,7 @@
+---
+description: Project Structure
+---
+
 # Project Structure
 
 This project is split into **API modules** and **Plugin modules** for better maintainability, shading, and reuse.
