@@ -1,3 +1,7 @@
+***REMOVED***
+description: Tech Stack & Code Styles
+***REMOVED***
+
 # AI Agent Instructions
 
 This repository is a **Minecraft server plugin project** built for **PaperMC** using the **Paper API**.  
