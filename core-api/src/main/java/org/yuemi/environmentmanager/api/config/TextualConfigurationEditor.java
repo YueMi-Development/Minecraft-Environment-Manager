@@ -98,18 +98,20 @@ public final class TextualConfigurationEditor {
     }
 
     private static String replaceValue(String line, String key, String newValue) {
-        // Regex to isolate key prefix and trailing comments
-        // Group 1: Leading spaces and key name with separator
-        // Group 4: The value itself (to be replaced)
-        // Group 5: Trailing comments
+        // Regex to isolate key prefix, value, optional trailing comma, and trailing comments.
+        // Group 1: Leading whitespace + key + separator (e.g. `  "bindPort": `)
+        // Group 5: The value itself (to be replaced)
+        // Group 6: Optional trailing comma (preserved)
+        // Group 7: Trailing comments / whitespace
         String keyEsc = Pattern.quote(key);
-        Pattern pattern = Pattern.compile("^([ \t]*(([\"']?)" + keyEsc + "([\"']?))[ \t]*[:=][ \t]*)([^#\n\r]*)(.*)$");
+        Pattern pattern = Pattern.compile("^([ \\t]*(([\"']?)" + keyEsc + "([\"']?))[ \\t]*[:=][ \\t]*)([^,#\\n\\r]*)(,?)(\\s*#.*)?$");
         Matcher matcher = pattern.matcher(line);
         
         if (matcher.find()) {
             String prefix = matcher.group(1);
-            String comment = matcher.group(6);
-            return prefix + formatValue(newValue) + comment;
+            String trailingComma = matcher.group(6);
+            String comment = matcher.group(7) != null ? matcher.group(7) : "";
+            return prefix + formatValue(newValue) + trailingComma + comment;
         }
         return line;
     }
