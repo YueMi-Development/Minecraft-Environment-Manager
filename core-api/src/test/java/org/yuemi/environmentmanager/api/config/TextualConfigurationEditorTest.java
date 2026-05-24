@@ -3,8 +3,18 @@ package org.yuemi.environmentmanager.api.config;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.net.URL;
 
 public class TextualConfigurationEditorTest {
+
+    private String readResource(String name) throws Exception {
+        URL url = getClass().getClassLoader().getResource(name);
+        if (url == null) throw new IllegalArgumentException("Resource not found: " + name);
+        // Normalize line endings to \n for consistent testing across OSes
+        return Files.readString(Paths.get(url.toURI())).replace("\r\n", "\n");
+    }
 
     @Test
     public void testFormatValue() throws Exception {
@@ -47,42 +57,35 @@ public class TextualConfigurationEditorTest {
     }
 
     @Test
-    public void testUpdateWithSpecialChars() {
-        String content = "database:\n  host: localhost\n  password: oldpassword";
+    public void testUpdateWithSpecialChars() throws Exception {
+        String content = readResource("testUpdateWithSpecialChars_input.yml");
         String updated = TextualConfigurationEditor.update(content, "database.password", "@SriwijayaRootDB1234");
-        
-        String expected = "database:\n  host: localhost\n  password: \"@SriwijayaRootDB1234\"";
+        String expected = readResource("testUpdateWithSpecialChars_output.yml");
         assertEquals(expected, updated);
     }
 
     @Test
-    public void testUpdateWithEmptyValue() {
-        String content = "database:\n  host: localhost\n  password: oldpassword";
+    public void testUpdateWithEmptyValue() throws Exception {
+        String content = readResource("testUpdateWithEmptyValue_input.yml");
         String updated = TextualConfigurationEditor.update(content, "database.password", "");
-        
-        String expected = "database:\n  host: localhost\n  password: ''";
+        String expected = readResource("testUpdateWithEmptyValue_output.yml");
         assertEquals(expected, updated);
     }
 
     @Test
-    public void testUpdateJsonPreservesTrailingComma() {
-        // Simulates a JSON file where the value has a trailing comma
-        String content = "{\n  \"bindPort\": \"-1\",\n  \"addressToSend\": \"\"\n}";
+    public void testUpdateJsonPreservesTrailingComma() throws Exception {
+        String content = readResource("testUpdateJsonPreservesTrailingComma_input.json");
         String updated = TextualConfigurationEditor.update(content, "bindPort", "25565");
-
-        // The trailing comma after the value must be preserved
-        String expected = "{\n  \"bindPort\": 25565,\n  \"addressToSend\": \"\"\n}";
+        String expected = readResource("testUpdateJsonPreservesTrailingComma_output.json");
         assertEquals(expected, updated);
     }
 
     @Test
-    public void testUpdateJsonLastKeyNoComma() {
-        // Last key in JSON object should NOT gain a comma
-        String content = "{\n  \"host\": \"localhost\",\n  \"port\": 3306\n}";
+    public void testUpdateJsonLastKeyNoComma() throws Exception {
+        String content = readResource("testUpdateJsonLastKeyNoComma_input.json");
         String updated = TextualConfigurationEditor.update(content, "port", "5432");
-
-        String expected = "{\n  \"port\": 5432\n}";
-        // Only check the port line
-        assert updated.contains("\"port\": 5432\n}") : "Last key should not have trailing comma: " + updated;
+        String expected = readResource("testUpdateJsonLastKeyNoComma_output.json");
+        
+        assertEquals(expected, updated);
     }
 }
