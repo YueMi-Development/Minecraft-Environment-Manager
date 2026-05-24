@@ -73,9 +73,16 @@ public final class TextualConfigurationEditor {
             int indent = getIndent(line);
 
             // Pop context entries that are at the same or deeper indentation
-            while (!indents.isEmpty() && indents.get(indents.size() - 1) >= indent) {
-                indents.remove(indents.size() - 1);
-                currentContextPath.remove(currentContextPath.size() - 1);
+            if (format == FileFormat.TOML) {
+                // TOML does not use indentation for hierarchy. 
+                // All keys belong directly to the current table.
+                indents.clear();
+                currentContextPath.clear();
+            } else {
+                while (!indents.isEmpty() && indents.get(indents.size() - 1) >= indent) {
+                    indents.remove(indents.size() - 1);
+                    currentContextPath.remove(currentContextPath.size() - 1);
+                }
             }
 
             String key = extractKey(trimmed, format);
