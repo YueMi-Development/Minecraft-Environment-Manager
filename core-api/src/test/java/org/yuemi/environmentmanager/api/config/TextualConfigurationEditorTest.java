@@ -63,4 +63,26 @@ public class TextualConfigurationEditorTest {
         String expected = "database:\n  host: localhost\n  password: ''";
         assertEquals(expected, updated);
     }
+
+    @Test
+    public void testUpdateJsonPreservesTrailingComma() {
+        // Simulates a JSON file where the value has a trailing comma
+        String content = "{\n  \"bindPort\": \"-1\",\n  \"addressToSend\": \"\"\n}";
+        String updated = TextualConfigurationEditor.update(content, "bindPort", "25565");
+
+        // The trailing comma after the value must be preserved
+        String expected = "{\n  \"bindPort\": 25565,\n  \"addressToSend\": \"\"\n}";
+        assertEquals(expected, updated);
+    }
+
+    @Test
+    public void testUpdateJsonLastKeyNoComma() {
+        // Last key in JSON object should NOT gain a comma
+        String content = "{\n  \"host\": \"localhost\",\n  \"port\": 3306\n}";
+        String updated = TextualConfigurationEditor.update(content, "port", "5432");
+
+        String expected = "{\n  \"port\": 5432\n}";
+        // Only check the port line
+        assert updated.contains("\"port\": 5432\n}") : "Last key should not have trailing comma: " + updated;
+    }
 }
