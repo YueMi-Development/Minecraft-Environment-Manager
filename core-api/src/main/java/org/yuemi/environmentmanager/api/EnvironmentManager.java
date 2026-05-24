@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.yuemi.environmentmanager.api.config.ConfigurationManager;
+import org.yuemi.environmentmanager.api.config.FileFormat;
 import org.yuemi.environmentmanager.api.config.TextualConfigurationEditor;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -76,8 +77,9 @@ public final class EnvironmentManager {
     private void migrateConfig(Path configPath, int currentVersion) {
         logger.info("Migrating configuration from version " + currentVersion + " to " + LATEST_CONFIG_VERSION);
         try {
+            FileFormat format = FileFormat.fromPath(configPath.getFileName().toString());
             String content = Files.readString(configPath);
-            content = TextualConfigurationEditor.update(content, "config-version", String.valueOf(LATEST_CONFIG_VERSION));
+            content = TextualConfigurationEditor.update(content, "config-version", String.valueOf(LATEST_CONFIG_VERSION), format);
             Files.writeString(configPath, content);
         } catch (IOException e) {
             logger.severe("Failed to save migrated configuration: " + e.getMessage());
@@ -195,6 +197,7 @@ public final class EnvironmentManager {
             Map<Object, ? extends ConfigurationNode> mappings = target.node("mappings").childrenMap();
 
             try {
+                FileFormat format = FileFormat.fromPath(relativePath);
                 String content = Files.readString(targetPath);
                 boolean changed = false;
 
@@ -204,7 +207,7 @@ public final class EnvironmentManager {
 
                     if (envKey != null) {
                         String value = resolveMappingValue(envKey);
-                        content = TextualConfigurationEditor.update(content, targetKey, value);
+                        content = TextualConfigurationEditor.update(content, targetKey, value, format);
                         changed = true;
                     }
                 }

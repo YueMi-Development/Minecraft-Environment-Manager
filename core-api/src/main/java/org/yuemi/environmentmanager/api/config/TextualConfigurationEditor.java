@@ -8,69 +8,124 @@ import java.util.regex.Pattern;
 
 /**
  * Surgically replaces values in configuration files while preserving all formatting and comments.
+ * Supports YAML, JSON, TOML, and HOCON formats via {@link FileFormat}.
  */
 public final class TextualConfigurationEditor {
 
     private TextualConfigurationEditor() {}
 
     /**
-     * Updates a value in the configuration content string.
+     * Matches TOML table headers: {@code [table.path]} or {@code [[array.table.path]]}
+     * Captures the inner path and allows trailing whitespace/comments.
+     */
+    private static final Pattern TOML_TABLE_HEADER = Pattern.compile(
+        "^\\[\\[?\\s*([^\\]]+?)\\s*\\]\\]?\\s*(#.*)?$"
+    );
+
+    /**
+     * Validates that a TOML header path contains only valid TOML key characters.
+     * Prevents false positives from JSON array values like {@code [\"string\", ...]}.
+     */
+    private static final Pattern TOML_PATH_VALIDATOR = Pattern.compile(
+        "^[A-Za-z0-9_\\-]+(\\.[A-Za-z0-9_\\-]+)*$"
+    );
+
+    /**
+     * Matches a quoted key at the start of a line followed by a separator ({@code :} or {@code =}).
+     */
+    private static final Pattern QUOTED_KEY_PATTERN = Pattern.compile(
+        "^([\"'])(.+?)\\1\\s*[:=]"
+    );
+
+    /**
+     * Updates a value in the configuration content string using the specified file format.
      *
      * @param content  the original file content
-     * @param keyPath  the dot-separated key path (e.g., "database.host")
+     * @param keyPath  the dot-separated key path (e.g., "database.host" or "common.multiThreading.numberOfThreads")
      * @param newValue the new value to set
+     * @param format   the file format to use for parsing rules
      * @return the updated content string, or original if key path not found
      */
-    public static String update(String content, String keyPath, String newValue) {
-        String[] path = keyPath.split("\\.");
-        // Split while preserving empty trailing lines
+    public static String update(String content, String keyPath, String newValue, FileFormat format) {
+        List<String> targetPath = Arrays.asList(keyPath.split("\\."));
         List<String> lines = new ArrayList<>(Arrays.asList(content.split("\\R", -1)));
-        
-        int startLine = 0;
-        int endLine = lines.size();
-        int currentIndent = -1;
 
-        for (int i = 0; i < path.length; i++) {
-            String targetKey = path[i];
-            int foundLine = -1;
-            
-            for (int j = startLine; j < endLine; j++) {
-                String line = lines.get(j);
-                String trimmed = line.trim();
-                
-                // Skip comments and empty lines
-                if (trimmed.isEmpty() || trimmed.startsWith("#") || trimmed.startsWith("//")) continue;
+        List<String> currentTomlPath = new ArrayList<>();
+        List<Integer> indents = new ArrayList<>();
+        List<String> currentContextPath = new ArrayList<>();
 
-                int indent = getIndent(line);
-                if (currentIndent != -1 && indent <= currentIndent) {
-                    // We've moved out of the previous block's scope
-                    break;
-                }
+        for (int i = 0; i < lines.size(); i++) {
+            String line = lines.get(i);
+            String trimmed = line.trim();
+            if (trimmed.isEmpty() || format.isComment(trimmed)) continue;
 
-                if (matchesKey(trimmed, targetKey)) {
-                    foundLine = j;
-                    currentIndent = indent;
-                    break;
+            // Parse TOML table headers when format supports them
+            if (format.usesTableHeaders()) {
+                String tomlPath = parseTomlTableHeader(trimmed);
+                if (tomlPath != null) {
+                    currentTomlPath = new ArrayList<>(Arrays.asList(tomlPath.split("\\.")));
+                    currentContextPath.clear();
+                    indents.clear();
+                    continue;
                 }
             }
 
-            if (foundLine == -1) {
-                // Key not found, return original
-                return content;
+            int indent = getIndent(line);
+
+            // Pop context entries that are at the same or deeper indentation
+            while (!indents.isEmpty() && indents.get(indents.size() - 1) >= indent) {
+                indents.remove(indents.size() - 1);
+                currentContextPath.remove(currentContextPath.size() - 1);
             }
 
-            if (i == path.length - 1) {
-                // Last key in path: replace its value
-                String originalLine = lines.get(foundLine);
-                lines.set(foundLine, replaceValue(originalLine, targetKey, newValue));
-            } else {
-                // Intermediate key: update range to search within this block
-                startLine = foundLine + 1;
-                endLine = findBlockEnd(lines, startLine, currentIndent);
+            String key = extractKey(trimmed, format);
+            if (key != null) {
+                List<String> fullPath = new ArrayList<>(currentTomlPath.size() + currentContextPath.size() + 1);
+                fullPath.addAll(currentTomlPath);
+                fullPath.addAll(currentContextPath);
+                fullPath.add(key);
+
+                if (fullPath.equals(targetPath)) {
+                    lines.set(i, replaceValue(line, key, newValue));
+                    return String.join("\n", lines);
+                }
+
+                indents.add(indent);
+                currentContextPath.add(key);
             }
         }
 
-        return String.join("\n", lines); // Use \n as standard internal separator
+        return content;
+    }
+
+    /**
+     * Convenience overload that determines the {@link FileFormat} from a file name or path string.
+     *
+     * @param content  file content
+     * @param keyPath  dot‑separated key path
+     * @param newValue new value to set
+     * @param fileName name or relative path of the configuration file (e.g. "config.toml")
+     * @return the updated content string
+     */
+    public static String update(String content, String keyPath, String newValue, String fileName) {
+        FileFormat format = FileFormat.fromPath(fileName);
+        return update(content, keyPath, newValue, format);
+    }
+
+    /**
+     * Attempts to parse a TOML table header from a trimmed line.
+     *
+     * @return the dot-separated path (e.g., "server.experimental"), or null if not a valid header
+     */
+    private static String parseTomlTableHeader(String trimmed) {
+        Matcher m = TOML_TABLE_HEADER.matcher(trimmed);
+        if (!m.matches()) return null;
+
+        String path = m.group(1).trim();
+        // Validate the path contains only valid TOML key characters (reject JSON array values)
+        if (!TOML_PATH_VALIDATOR.matcher(path).matches()) return null;
+
+        return path;
     }
 
     private static int getIndent(String line) {
@@ -81,32 +136,67 @@ public final class TextualConfigurationEditor {
         return count;
     }
 
-    private static boolean matchesKey(String trimmed, String targetKey) {
-        String quoted = "\"" + targetKey + "\"";
-        String singleQuoted = "'" + targetKey + "'";
-        
-        return trimmed.startsWith(targetKey + ":") || 
-               trimmed.startsWith(targetKey + " :") ||
-               trimmed.startsWith(targetKey + "=") ||
-               trimmed.startsWith(targetKey + " =") ||
-               trimmed.startsWith(quoted + ":") ||
-               trimmed.startsWith(quoted + " :") ||
-               trimmed.startsWith(quoted + "=") ||
-               trimmed.startsWith(quoted + " =") ||
-               trimmed.startsWith(singleQuoted + ":") ||
-               trimmed.startsWith(singleQuoted + " =");
+    /**
+     * Extracts the key name from a trimmed line.
+     * Handles quoted keys ("key", 'key') and unquoted keys.
+     * Skips structural characters ({, }, [, ]) for formats that use them.
+     *
+     * @return the key name, or null if the line doesn't contain a key-value pair
+     */
+    private static String extractKey(String trimmed, FileFormat format) {
+        // Skip structural brace/bracket characters for JSON and HOCON
+        if (format.hasStructuralBraces()) {
+            if (trimmed.startsWith("{") || trimmed.startsWith("}") ||
+                trimmed.startsWith("[") || trimmed.startsWith("]")) {
+                return null;
+            }
+        }
+
+        // Try quoted key first ("key": value or 'key' = value)
+        Matcher quotedMatcher = QUOTED_KEY_PATTERN.matcher(trimmed);
+        if (quotedMatcher.find()) {
+            return quotedMatcher.group(2);
+        }
+
+        // Unquoted key: find first ':' or '='
+        int colonIndex = trimmed.indexOf(':');
+        int eqIndex = trimmed.indexOf('=');
+        int sepIndex;
+
+        if (colonIndex != -1 && eqIndex != -1) {
+            sepIndex = Math.min(colonIndex, eqIndex);
+        } else if (colonIndex != -1) {
+            sepIndex = colonIndex;
+        } else if (eqIndex != -1) {
+            sepIndex = eqIndex;
+        } else {
+            return null;
+        }
+
+        String key = trimmed.substring(0, sepIndex).trim();
+        if (key.isEmpty()) return null;
+
+        return key;
     }
 
+    /**
+     * Replaces the value portion of a key-value line, preserving the key prefix,
+     * trailing commas, and inline comments.
+     * Correctly handles quoted string values that contain '#' or ',' characters.
+     */
     private static String replaceValue(String line, String key, String newValue) {
-        // Regex to isolate key prefix, value, optional trailing comma, and trailing comments.
-        // Group 1: Leading whitespace + key + separator (e.g. `  "bindPort": `)
-        // Group 5: The value itself (to be replaced)
-        // Group 6: Optional trailing comma (preserved)
-        // Group 7: Trailing comments / whitespace
         String keyEsc = Pattern.quote(key);
-        Pattern pattern = Pattern.compile("^([ \\t]*(([\"']?)" + keyEsc + "([\"']?))[ \\t]*[:=][ \\t]*)([^,#\\n\\r]*)(,?)(\\s*#.*)?$");
+        // Value group handles three cases via alternation:
+        //   1. Double-quoted strings (may contain #, commas, escaped chars)
+        //   2. Single-quoted strings (may contain #, commas, escaped chars)
+        //   3. Unquoted values (stops at , or #)
+        Pattern pattern = Pattern.compile(
+            "^([ \\t]*(([\"']?)" + keyEsc + "([\"']?))[ \\t]*[:=][ \\t]*)" +
+            "(\"(?:[^\"\\\\]|\\\\.)*\"|'(?:[^'\\\\]|\\\\.)*'|[^,#\\n\\r]*)" +
+            "(,?)(\\s*#.*)?$"
+        );
         Matcher matcher = pattern.matcher(line);
-        
+
         if (matcher.find()) {
             String prefix = matcher.group(1);
             String trailingComma = matcher.group(6);
@@ -115,18 +205,15 @@ public final class TextualConfigurationEditor {
         }
         return line;
     }
-    
-    private static String formatValue(String value) {
+
+    static String formatValue(String value) {
         if (value == null) return "null";
-        // If the value is explicitly empty, use '' (standard for empty string in YAML/HOCON)
         if (value.isEmpty()) return "''";
 
-        // Characters that should trigger quoting if present anywhere
-        boolean containsSpecial = value.contains(" ") || value.contains("#") || 
-                                value.contains(":") || value.contains("=") || 
+        boolean containsSpecial = value.contains(" ") || value.contains("#") ||
+                                value.contains(":") || value.contains("=") ||
                                 value.contains("\"") || value.contains("'");
-        
-        // Characters that should trigger quoting if they start the value (YAML special)
+
         boolean startsWithSpecial = false;
         if (!value.isEmpty()) {
             char first = value.charAt(0);
@@ -135,26 +222,12 @@ public final class TextualConfigurationEditor {
         }
 
         if (containsSpecial || startsWithSpecial) {
-            // Only quote if not already surrounded by matching quotes
-            boolean isQuoted = (value.startsWith("\"") && value.endsWith("\"")) || 
+            boolean isQuoted = (value.startsWith("\"") && value.endsWith("\"")) ||
                              (value.startsWith("'") && value.endsWith("'"));
             if (!isQuoted) {
                 return "\"" + value.replace("\"", "\\\"") + "\"";
             }
         }
         return value;
-    }
-
-    private static int findBlockEnd(List<String> lines, int startLine, int parentIndent) {
-        for (int i = startLine; i < lines.size(); i++) {
-            String line = lines.get(i);
-            String trimmed = line.trim();
-            if (trimmed.isEmpty() || trimmed.startsWith("#") || trimmed.startsWith("//")) continue;
-            
-            if (getIndent(line) <= parentIndent) {
-                return i;
-            }
-        }
-        return lines.size();
     }
 }

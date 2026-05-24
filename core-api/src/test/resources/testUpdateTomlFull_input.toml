@@ -1,0 +1,17 @@
+_version = 4
+
+[server]
+	realTimeUpdateDistanceRadiusInChunks = 256
+	levelKeyPrefix = ""
+
+	[server.experimental]
+		enableNSizedGeneration = false
+
+	[common.lodBuilding]
+		worldCompression = "VISUALLY_EQUAL"
+
+		[common.lodBuilding.experimental]
+			upsampleLowerDetailLodsToFillHoles = false
+
+	[common.multiThreading]
+		numberOfThreads = 2

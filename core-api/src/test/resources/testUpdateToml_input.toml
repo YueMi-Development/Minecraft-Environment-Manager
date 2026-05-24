@@ -1,0 +1,4 @@
+[server]
+	[common.multiThreading]
+		# How many threads should be used by Distant Horizons?
+		numberOfThreads = 2
